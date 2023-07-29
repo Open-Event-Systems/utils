@@ -140,6 +140,7 @@ def _get_schema_for_attrs_class(docs: OpenAPIHandler, t: Any, nullable: bool) ->
         type=ValueType.OBJECT,
         properties={a.name: _get_field_type(docs, a.type) for a in fields(t)},
         nullable=nullable,
+        required=[a.name for a in fields(t) if not _is_optional(a.type)],
     )
 
 

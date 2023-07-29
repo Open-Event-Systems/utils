@@ -65,6 +65,91 @@ class MyClass4:
     val3: dict[str, int]
 
 
+my_class_1_schema = Schema(
+    type=ValueType.OBJECT,
+    nullable=False,
+    properties={
+        "a": Schema(
+            type=ValueType.INTEGER,
+            format=ValueFormat.INT64,
+            nullable=False,
+        ),
+        "b": Schema(
+            type=ValueType.STRING,
+            nullable=True,
+        ),
+    },
+    required=["a"],
+)
+
+my_class_2_schema = Schema(
+    type=ValueType.OBJECT,
+    nullable=False,
+    properties={
+        "c": Schema(
+            type=ValueType.INTEGER,
+            format=ValueFormat.INT64,
+            nullable=False,
+        ),
+    },
+    required=["c"],
+)
+
+my_class_3_schema = Schema(
+    type=ValueType.OBJECT,
+    nullable=False,
+    properties={
+        "val": Schema(
+            type=ValueType.INTEGER,
+            format=ValueFormat.INT64,
+            nullable=False,
+        ),
+        "obj": Schema(
+            one_of=[
+                my_class_1_schema,
+                my_class_2_schema,
+            ],
+            nullable=False,
+        ),
+    },
+    required=["val", "obj"],
+)
+
+my_class_4_schema = Schema(
+    type=ValueType.OBJECT,
+    nullable=False,
+    properties={
+        "val": Schema(
+            type=ValueType.ARRAY,
+            items=Schema(
+                one_of=[
+                    my_class_2_schema,
+                    Schema(type=ValueType.STRING, nullable=False),
+                ],
+                nullable=False,
+            ),
+            nullable=True,
+        ),
+        "val2": Schema(
+            type=ValueType.ARRAY,
+            items=Schema(
+                one_of=[
+                    Schema(type=ValueType.STRING, nullable=False),
+                    my_class_2_schema,
+                ],
+                nullable=True,
+            ),
+            nullable=False,
+        ),
+        "val3": Schema(
+            type=ValueType.OBJECT,
+            nullable=False,
+        ),
+    },
+    required=["val2", "val3"],
+)
+
+
 @app.router.post("/")
 @app_docs(
     summary="Test endpoint",
@@ -101,107 +186,24 @@ def docs():
     (
         (
             MyClass1,
-            [
-                FieldInfo(
-                    "a",
-                    Schema(
-                        type=ValueType.INTEGER,
-                        format=ValueFormat.INT64,
-                        nullable=False,
-                    ),
-                ),
-                FieldInfo(
-                    "b",
-                    Schema(
-                        type=ValueType.STRING,
-                        nullable=True,
-                    ),
-                ),
-            ],
+            my_class_1_schema,
         ),
         (
             MyClass2,
-            [
-                FieldInfo(
-                    "c",
-                    Schema(
-                        type=ValueType.INTEGER,
-                        format=ValueFormat.INT64,
-                        nullable=False,
-                    ),
-                )
-            ],
+            my_class_2_schema,
         ),
         (
             MyClass3,
-            [
-                FieldInfo(
-                    "val",
-                    Schema(
-                        type=ValueType.INTEGER,
-                        format=ValueFormat.INT64,
-                        nullable=False,
-                    ),
-                ),
-                FieldInfo(
-                    "obj",
-                    Schema(
-                        one_of=[
-                            Reference("#/components/schemas/MyClass1"),
-                            Reference("#/components/schemas/MyClass2"),
-                        ],
-                        nullable=False,
-                    ),
-                ),
-            ],
+            my_class_3_schema,
         ),
         (
             MyClass4,
-            [
-                FieldInfo(
-                    "val",
-                    Schema(
-                        type=ValueType.ARRAY,
-                        items=Schema(
-                            one_of=[
-                                Reference("#/components/schemas/MyClass2"),
-                                Schema(type=ValueType.STRING, nullable=False),
-                            ],
-                            nullable=False,
-                        ),
-                        nullable=True,
-                    ),
-                ),
-                FieldInfo(
-                    "val2",
-                    Schema(
-                        type=ValueType.ARRAY,
-                        items=Schema(
-                            one_of=[
-                                Schema(type=ValueType.STRING, nullable=False),
-                                Reference("#/components/schemas/MyClass2"),
-                            ],
-                            nullable=True,
-                        ),
-                        nullable=False,
-                    ),
-                ),
-                FieldInfo(
-                    "val3",
-                    Schema(
-                        type=ValueType.OBJECT,
-                        nullable=False,
-                    ),
-                ),
-            ],
+            my_class_4_schema,
         ),
     ),
 )
 def test_get_field_type(docs, typ, expected):
-    ref = _get_field_type(docs, typ)
-    assert isinstance(ref, Reference)
-    fields = docs.get_fields(typ)
-    assert fields == expected
+    assert _get_field_type(docs, typ) == expected
 
 
 def test_attrs_handler(docs: OpenAPIHandler):
@@ -221,8 +223,8 @@ def test_attrs_handler(docs: OpenAPIHandler):
             "obj",
             Schema(
                 one_of=[
-                    Reference("#/components/schemas/MyClass1"),
-                    Reference("#/components/schemas/MyClass2"),
+                    my_class_1_schema,
+                    my_class_2_schema,
                 ],
                 nullable=False,
             ),
