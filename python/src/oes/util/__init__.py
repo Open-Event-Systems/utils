@@ -15,4 +15,5 @@ __all__ = [
     "urlsafe_b64decode",
     # modules
     "blacksheep",
+    "logging",
 ]

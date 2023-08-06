@@ -11,9 +11,10 @@ license = "LGPL-3.0-or-later"
 python = "^3.9"
 typing-extensions = "^4.7.1"
 attrs = { version = "^23.1.0", optional = true }
-cattrs = {version = "^23.1.2", optional = true}
+cattrs = { version = "^23.1.2", optional = true }
 orjson = { version = "^3.9.2", optional = true }
 blacksheep = { version = "^1.2.18", optional = true }
+loguru = { version = "^0.7.0", optional = true }
 
 
 [tool.poetry.group.dev.dependencies]
@@ -23,6 +24,7 @@ coverage = "^7.2.7"
 
 [tool.poetry.extras]
 attrs = ["attrs"]
+loguru = ["loguru"]
 blacksheep = ["attrs", "cattrs", "blacksheep", "orjson"]
 
 [build-system]
